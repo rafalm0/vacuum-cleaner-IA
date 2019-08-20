@@ -32,7 +32,7 @@ class House:
                 for j, dimy in enumerate(self.rooms):
                     if len(dirt) == 0:
                         break
-                    for i, dimx in enumerate(self.rooms):
+                    for i, dimx in enumerate(dimy):
                         if len(dirt) == 0:
                             break
                         self.rooms[j][i].dirty = dirt.pop(0)
@@ -64,8 +64,8 @@ class VacuumCleaner:
         return
 
     def suck(self):
-        if self.ambient.rooms[self.x][self.y].dirty:
-            self.ambient.rooms[self.x][self.y].dirty = False
+        if self.ambient.rooms[self.y][self.x].dirty:
+            self.ambient.rooms[self.y][self.x].dirty = False
             self.performance -= 1
         else:
             raise AssertionError('tento suga sujeira que nao existia saporra é burra só pode')
@@ -141,7 +141,7 @@ def printrooms(ambient, vacuum):
             if vacuum.x == room.x and vacuum.y == room.y:
                 print('[x]' + str(room.dirty), end = '\t')
             else:
-                print('[' + str(room.x) + '|' + str(room.y) + ']' + str(room.dirty), end = '\t')
+                print('[ ]' + str(room.dirty), end = '\t')
         print()
 
     print('\n#-------------#--------------#--------------#--------------#\n')
@@ -151,7 +151,7 @@ def printrooms(ambient, vacuum):
 if __name__ == '__main__':
     initialPos = [0, 0]
     houseDimension = [3, 1]
-    houseDirt = [True, False, False]
+    houseDirt = [True, True, True]
     myHome = House(houseDimension[0], houseDimension[1], houseDirt)
     myVacuum = VacuumCleaner(myHome, initialPos)
     print('INITIAL STATE :\n')

@@ -1,5 +1,6 @@
-from random import choice, shuffle, random
+from random import choice, shuffle
 import time
+
 
 class Room:
     def __init__(self, x, y, dirt = None):
@@ -117,7 +118,7 @@ class VacuumCleaner:
 
     def randomchose(self):
         options = self.see()
-        if not isinstance(options,list):
+        if not isinstance(options, list):
             return options
         return choice(options)
 
@@ -139,9 +140,9 @@ def printrooms(ambient, vacuum):
     for corridor in ambient.rooms:
         for room in corridor:
             if vacuum.x == room.x and vacuum.y == room.y:
-                print('[x]' + str(room.dirty), end = '\t')
+                print('[x]' + str(room.dirty) + ' ', end = '\t')
             else:
-                print('[ ]' + str(room.dirty), end = '\t')
+                print('[ ]' + str(room.dirty) + ' ', end = '\t')
         print()
 
     print('\n#-------------#--------------#--------------#--------------#\n')

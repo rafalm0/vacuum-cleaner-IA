@@ -1,9 +1,12 @@
 from random import choice, shuffle
 import time
+import pandas as pd
+import os
+from itertools import combinations
 
 
 class Room:
-    def __init__(self, x, y, dirt = None):
+    def __init__(self, x, y, dirt=None):
         self.x = x
         self.y = y
         if dirt is None:
@@ -14,7 +17,7 @@ class Room:
 
 
 class House:
-    def __init__(self, x, y, dirt = None):
+    def __init__(self, x, y, dirt=None):
         if dirt is None:
             self.rooms = [[Room(b, a) for b in range(x)] for a in range(y)]
         else:
@@ -48,7 +51,7 @@ class House:
 
 
 class VacuumCleaner:
-    def __init__(self, ambient, position = None):
+    def __init__(self, ambient, position=None):
         if position is not None:
             if position[0] not in list(range(len(ambient.rooms[0]))):
                 raise ValueError('vacuum cleaner out of bounds "X dimension"')
@@ -61,13 +64,18 @@ class VacuumCleaner:
             self.y = choice(list(range(len(ambient.rooms))))
         self.performance = 0
         self.ambient = ambient
-        self.action = {'up': self.goup, 'down': self.godown, 'left': self.goleft, 'right': self.goright, 'suck': self.suck}
+        self.action = {'up': self.goup,
+                       'down': self.godown,
+                       'left': self.goleft,
+                       'right': self.goright,
+                       'suck': self.suck}
         return
 
     def suck(self):
         if self.ambient.rooms[self.y][self.x].dirty:
             self.ambient.rooms[self.y][self.x].dirty = False
-            self.performance -= 1
+            # self.performance -= 1
+            self.performance += 1
         else:
             raise AssertionError('tento suga sujeira que nao existia saporra é burra só pode')
         return
@@ -76,34 +84,42 @@ class VacuumCleaner:
         if self.y >= len(self.ambient.rooms):
             raise ValueError('fora da area ')
         self.y += 1
-        self.performance += 2
+        # self.performance += 2
+        self.performance += 1
         return
 
     def godown(self):
         if self.y <= 0:
             raise ValueError('fora da area ')
         self.y -= 1
-        self.performance += 2
+        # self.performance += 2
+        self.performance += 1
         return
 
     def goright(self):
         if self.x >= len(self.ambient.rooms[self.y]):
             raise ValueError('fora da area ')
         self.x += 1
-        self.performance += 2
+        # self.performance += 2
+        self.performance += 1
         return
 
     def goleft(self):
         if self.x <= 0:
             raise ValueError('fora da area ')
         self.x -= 1
-        self.performance += 2
+        # self.performance += 2
+        self.performance += 1
         return
 
     def see(self):
         if self.ambient.rooms[self.y][self.x].dirty:
             return 'suck'
-        dise_values = [[[self.x + 1, self.y], [self.x - 1, self.y], [self.x, self.y + 1], [self.x, self.y - 1]], ['right', 'left', 'up', 'down']]
+        dise_values = [[
+                        [self.x + 1, self.y],
+                        [self.x - 1, self.y],
+                        [self.x, self.y + 1],
+                        [self.x, self.y - 1]], ['right', 'left', 'up', 'down']]
         options = []
         for i, option in enumerate(dise_values[0]):
             try:
@@ -129,7 +145,9 @@ class VacuumCleaner:
     def activate(self):
         while True:
             self.doaction()
-            time.sleep(1)
+
+            # time.sleep(0.1)
+            os.system('clear')
             printrooms(self.ambient, self)
             if self.ambient.cleanhouse():
                 break
@@ -140,9 +158,9 @@ def printrooms(ambient, vacuum):
     for corridor in ambient.rooms:
         for room in corridor:
             if vacuum.x == room.x and vacuum.y == room.y:
-                print('[x]' + str(room.dirty) + ' ', end = '\t')
+                print('[x]' + str(room.dirty) + ' ', end='\t')
             else:
-                print('[ ]' + str(room.dirty) + ' ', end = '\t')
+                print('[ ]' + str(room.dirty) + ' ', end='\t')
         print()
 
     print('\n#-------------#--------------#--------------#--------------#\n')
@@ -150,12 +168,47 @@ def printrooms(ambient, vacuum):
 
 
 if __name__ == '__main__':
-    initialPos = [0, 0]
-    houseDimension = [3, 1]
-    houseDirt = [True, True, True]
-    myHome = House(houseDimension[0], houseDimension[1], houseDirt)
-    myVacuum = VacuumCleaner(myHome, initialPos)
-    print('INITIAL STATE :\n')
-    printrooms(myHome, myVacuum)
-    myVacuum.activate()
-    pass
+    df = pd.DataFrame()
+    locations = [0, 1, 2]
+
+    score = []
+    initPos = []
+    roomconfig = []
+    pos_0 = []
+    pos_1 = []
+    pos_2 = []
+    for location in locations:
+        a = False
+        b = False
+        c = False
+        while True:
+            os.system('clear')
+            initialPos = [location, 0]
+            houseDimension = [3, 1]
+            houseDirt = [a, b, c]
+            myHome = House(houseDimension[0], houseDimension[1], houseDirt)
+            myVacuum = VacuumCleaner(myHome, initialPos)
+            print('INITIAL STATE :\n')
+            printrooms(myHome, myVacuum)
+            myVacuum.activate()
+            score.append(myVacuum.performance)
+            initPos.append(initialPos[0])
+            roomconfig.append('-'.join([str(x) for x in [a, b, c]]))
+
+            if not a:
+                a = True
+            else:
+                if not b:
+                    b = True
+                    a = False
+                else:
+                    if not c:
+                        c = True
+                        b = False
+                        a = False
+                    else:
+                        break
+    df['score'] = score
+    df['init_pos'] = initPos
+    df['room_config'] = roomconfig
+    df.to_csv('log.csv', sep=';', encoding='utf-8', index=False)
